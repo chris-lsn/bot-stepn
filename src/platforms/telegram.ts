@@ -1,15 +1,16 @@
 import axios from 'axios';
 import { Context, Telegraf } from 'telegraf';
 import { Update } from 'typegram';
+import { ConfigService } from '../services/configService';
 import logger from '../logger';
 import { BasePlatform } from './platform';
 
 export class Telegram extends BasePlatform {
-    bot: Telegraf<Context<Update>>
+    private readonly bot: Telegraf<Context<Update>>
 
-    constructor(telegramToken: string) {
+    constructor() {
         super()
-        this.bot = new Telegraf(telegramToken)
+        this.bot = new Telegraf(ConfigService.Instance.telegramToken)
     }
 
     public listen(): void {
@@ -18,18 +19,15 @@ export class Telegram extends BasePlatform {
         })
 
         this.bot.on('photo', async ctx => {
-            logger.info("A new photo received")
+            logger.info("New sceenshot received")
             const fileLink = await this.bot.telegram.getFileLink(ctx.message.photo[3])
             const file = await axios.get(fileLink.href, { responseType: 'arraybuffer' });
             const result = await this.analyzer.parse(file.data)
 
             if (result.isSuccess()) {
                 const resultValue = result.value
-                const appendResult = await this.sheet.append([resultValue])
-                if (appendResult.isFailure()) {
-                    logger.error(appendResult.error)
-                }
-                ctx.reply(`Action: ${resultValue.title}, InOut: ${resultValue.inOut}, Currency: ${resultValue.currency}, Price: ${resultValue.price}`)
+                this.sheet.append([resultValue])
+                ctx.reply(`Action: ${resultValue.title} \nInOut: ${resultValue.inOut} \nCurrency: ${resultValue.currency} \nPrice: ${resultValue.price}`)
             }
             
         })
