@@ -1,4 +1,4 @@
-import axios, { AxiosResponse } from "axios";
+import axios from "axios";
 import { ConfigService } from "./configService";
 import { Failure, Result, Success } from "../result";
 

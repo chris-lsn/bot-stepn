@@ -1,5 +1,5 @@
+import CoinService from "../services/coinService";
 import { ConfigService } from "../services/configService";
-import CoinService from "../services/CoinService";
 import { SheetService } from "../services/sheetService";
 
 const schedule = require("node-schedule")
