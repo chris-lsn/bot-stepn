@@ -1,16 +1,14 @@
-import { Config } from "../config";
-import { Sheet } from "../sheet";
-import { StepnAnalyzer } from "../stepn";
+import { ConfigService } from "../services/configService";
+import { SheetService } from "../services/sheetService";
+import { StepnAnalyzer } from "../services/stepnService";
 
 export abstract class BasePlatform {
-    protected readonly config: Config 
+    protected readonly config: ConfigService = ConfigService.Instance
+    protected readonly sheet: SheetService = SheetService.Instance
     protected readonly analyzer: StepnAnalyzer
-    protected readonly sheet: Sheet
 
     constructor() {
-        this.config = Config.getInstance();
         this.analyzer = new StepnAnalyzer(this.config.googleCredentials)
-        this.sheet = new Sheet(this.config.sheetId, this.config.googleServiceAccount, this.config.googlePrivateKey)
     }
 
     public abstract listen(): void;

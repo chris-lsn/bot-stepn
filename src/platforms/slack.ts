@@ -4,15 +4,16 @@ import axios from 'axios'
 import { Failure, Result, Success } from '../result'
 import { App } from '@slack/bolt'
 import { BasePlatform } from './platform'
+import { ConfigService } from '../services/configService'
 
 export class Slack extends BasePlatform {
   readonly app: App
 
-  constructor(slackToken: string, slackSecret: string) {
+  constructor () {
     super()
     this.app = new App({
-      token: slackToken,
-      signingSecret: slackToken,
+      token: ConfigService.Instance.slackToken,
+      signingSecret: ConfigService.Instance.slackSecret,
     })
   }
   
@@ -49,10 +50,7 @@ export class Slack extends BasePlatform {
           })
       )
     
-      const appendResult = await this.sheet.append(parseResults.flatMap((x) => x ?? []))
-      if (appendResult.isFailure()) {
-        console.error(appendResult.error)
-      }
+      this.sheet.append(parseResults.flatMap((x) => x ?? []))
     })
   }
 }

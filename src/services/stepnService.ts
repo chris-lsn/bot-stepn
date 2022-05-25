@@ -1,12 +1,13 @@
 import vision, { ImageAnnotatorClient } from '@google-cloud/vision'
 import { auth } from 'google-auth-library'
+import moment from 'moment'
 
-import { Failure, Result, Success } from './result'
+import { Failure, Result, Success } from '../result'
 
 export type StepnRecord = {
   title: 'Repair' | 'Level Up' | 'Move & Earn'
   inOut: 'IN' | 'OUT'
-  currency: 'GST'
+  currency: 'GST' | 'GMT'
   price: number
   duration: string
   startTime: string
@@ -22,7 +23,7 @@ export class StepnAnalyzer {
   private readonly earningRegex = /\+\s*(?<num>\d+(\.\d+)?)/
   private readonly durationRegex = /(?<duration>\d{2}:\d{2}:\d{2})/
   private readonly usedEnergyRegex = /(\-.*(?<usedEnergy>\d+\.\d+))/
-  private readonly levelRegex = /(Lv.*(?<level>\d+))/
+  private readonly levelRegex = /(Lv\s(?<level>\d+))/
   private readonly sneakerCodeRegex = /(?<sneakerCode>\d{9})/
 
   private readonly identifier = {
@@ -75,7 +76,7 @@ export class StepnAnalyzer {
             inOut: 'OUT',
             currency: 'GST',
             price: Number(target?.groups?.num) || 0,
-            startTime: '',
+            startTime: moment().format('DD/MM/yyyy HH:MM'),
             duration: '',
             energy: 0,
             level: Number(target?.groups?.level) || 0,
@@ -102,6 +103,7 @@ export class StepnAnalyzer {
     }
 
     if (text.match(this.identifier.STEPN)) {
+      console.log(text)
       const earningTarget = text.match(this.earningRegex)
       const startTimeTarget = text.match(this.datetimeRegex)
       const durationTarget = text.match(this.durationRegex)
@@ -120,7 +122,6 @@ export class StepnAnalyzer {
             level: Number(levelTarget?.groups?.level) || 0,
             sneakerCode: `#${sneakerCodeTarget?.groups?.sneakerCode}` || ''
           })
-
     }
 
     return new Failure(new Error('The expected string was not included.'))

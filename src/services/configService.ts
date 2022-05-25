@@ -6,7 +6,7 @@ export enum Platform {
   SLACK
 }
 
-export class Config {
+export class ConfigService {
   readonly port: number | string
   readonly platform: Platform
   readonly slackSecret: string
@@ -16,8 +16,9 @@ export class Config {
   readonly googleCredentials: string
   readonly googleServiceAccount: string
   readonly googlePrivateKey: string
+  readonly coinMarketCapApiKey: string
 
-  static instance: Config
+  private static _instance: ConfigService
 
   constructor() {
     this.port = process.env.PORT || 3000
@@ -27,6 +28,7 @@ export class Config {
     this.telegramToken = process.env.TG_BOT_TOKEN!
     this.sheetId = process.env.GOOGLE_SHEET_ID!
     this.googleCredentials = process.env.GOOGLE_CREDENTIALS!
+    this.coinMarketCapApiKey = process.env.COINMARKETCAP_API_TOKEN!
 
     const keys = JSON.parse(this.googleCredentials)
     this.googleServiceAccount = keys.client_email
@@ -67,8 +69,8 @@ export class Config {
     }
   }
 
-  public static getInstance = () => {
-    if (!this.instance) this.instance = new Config()
-    return this.instance
+  public static get Instance()
+  {
+      return this._instance || (this._instance = new this());
   }
 }
