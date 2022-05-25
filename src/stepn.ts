@@ -21,7 +21,7 @@ export class StepnAnalyzer {
   private readonly costRegex = /(?<num>\d+(\.\d+)?\s*)GST/
   private readonly earningRegex = /\+\s*(?<num>\d+(\.\d+)?)/
   private readonly durationRegex = /(?<duration>\d{2}:\d{2}:\d{2})/
-  private readonly usedEnergyRegex = /(.*(?<usedEnergy>\d+\.\d+))/
+  private readonly usedEnergyRegex = /(\-.*(?<usedEnergy>\d+\.\d+))/
   private readonly levelRegex = /(Lv.*(?<level>\d+))/
   private readonly sneakerCodeRegex = /(?<sneakerCode>\d{9})/
 
