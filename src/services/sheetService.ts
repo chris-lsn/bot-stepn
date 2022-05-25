@@ -16,21 +16,24 @@ class Dao {
   private readonly level
   private readonly sneakerCode
   private readonly duration
+  private readonly remarks
   private readonly emptyStr = '---'
+
   constructor(record: StepnRecord) {
-    this.startTime = record.startTime 
+    this.startTime = record.date 
     this.title = record.title 
     this.inOut = record.inOut
     this.currency = record.currency
-    this.price = record.price === 0 ? this.emptyStr : record.price
-    this.energy = record.energy === 0 ? this.emptyStr : record.energy
-    this.level = record.level === 0 ? this.emptyStr : record.level
-    this.sneakerCode = record.sneakerCode ? record.sneakerCode : this.emptyStr
-    this.duration = record.duration ? record.duration : this.emptyStr
+    this.price = record.amount || this.emptyStr
+    this.energy = record.energy || this.emptyStr
+    this.level = record.level || this.emptyStr
+    this.sneakerCode = record.sneakerCode || this.emptyStr
+    this.duration = record.duration || this.emptyStr
+    this.remarks = record.remarks || this.emptyStr
   }
   
   public toArray() {
-    return [this.startTime, this.sneakerCode, this.level, this.energy, this.duration, this.title, this.inOut, this.currency, this.price]
+    return [this.startTime, this.sneakerCode, this.level, this.energy, this.duration, this.title, this.inOut, this.currency, this.price, this.remarks]
   }
 }
 

@@ -8,28 +8,31 @@ export type StepnRecord = {
   title: 'Repair' | 'Level Up' | 'Move & Earn'
   inOut: 'IN' | 'OUT'
   currency: 'GST' | 'GMT'
-  price: number
-  duration: string
-  startTime: string
-  energy: number
-  level: number
-  sneakerCode: string
+  amount: number
+  duration?: string
+  date: string
+  energy?: number
+  level?: number
+  sneakerCode?: string,
+  durability?: string,
+  remarks?: string
 }
 
 export class StepnAnalyzer {
   private readonly client: ImageAnnotatorClient
   private readonly datetimeRegex = /(?<date>\d{2}\/\d{2}\/\d{4}\s\d{2}:\d{2})/
-  private readonly costRegex = /(?<num>\d+(\.\d+)?\s*)GST/
-  private readonly earningRegex = /\+\s*(?<num>\d+(\.\d+)?)/
+  private readonly amountRegex = /(?<amount>\d+(\.\d+)?\s*)GST/
+  private readonly earningRegex = /\+\s*(?<earning>\d+(\.\d+)?)/
   private readonly durationRegex = /(?<duration>\d{2}:\d{2}:\d{2})/
   private readonly usedEnergyRegex = /(\-.*(?<usedEnergy>\d+\.\d+))/
   private readonly levelRegex = /(Lv\s(?<level>\d+))/
   private readonly sneakerCodeRegex = /(?<sneakerCode>\d{9})/
+  private readonly durabilityRegex = /(?<durability>\d+\/100)/
 
   private readonly identifier = {
     REPAIR: 'REPAIR',
     LEVEL_UP: 'LEVEL UP',
-    STEPN: 'Long press to identify and download APP', // 歩いてGSTを稼いだ時の画面識別用
+    STEPN: 'SHARE YOUR RUN', // 歩いてGSTを稼いだ時の画面識別用
   } as const
 
   constructor(credentials: string) {
@@ -42,7 +45,7 @@ export class StepnAnalyzer {
   public async parse(image: Buffer): Promise<Result<StepnRecord, Error>> {
     const text = await this.detectText(image)
     if (text.isFailure()) {
-      return text
+      return new Failure(text.error)
     }
     return await this.parseText(text.value)
   }
@@ -68,62 +71,73 @@ export class StepnAnalyzer {
   }
 
   private parseText(text: string): Result<StepnRecord, Error> {
+    const currentTime = moment().format('DD/MM/yyyy HH:MM')
     if (text.match(this.identifier.REPAIR)) {
-      const target = text.match(this.costRegex)
-      return target?.groups?.num != null
-        ? new Success({
-            title: 'Repair',
-            inOut: 'OUT',
-            currency: 'GST',
-            price: Number(target?.groups?.num) || 0,
-            startTime: moment().format('DD/MM/yyyy HH:MM'),
-            duration: '',
-            energy: 0,
-            level: Number(target?.groups?.level) || 0,
-            sneakerCode: ''
-          })
-        : new Failure(new Error('Cannot extract values.'))
+      console.log(text)
+      const amount = Number(text.match(this.amountRegex)?.groups?.amount)
+      const durability = text.match(this.durabilityRegex)?.groups?.durability
+
+      if (Number.isNaN(amount) || !durability)
+        return new Failure(new Error('Cannot extract values.'))
+
+      return new Success({
+        title: 'Repair',
+        inOut: 'OUT',
+        currency: 'GST',
+        amount: Number(amount),
+        date: currentTime,
+        durability
+      })
     }
 
     if (text.match(this.identifier.LEVEL_UP)) {
-      const target = text.match(this.costRegex)
-      return target?.groups?.num != null
-        ? new Success({
-            title: 'Level Up',
-            inOut: 'OUT',
-            currency: 'GST',
-            price: Number(target?.groups?.num) || 0,
-            startTime: '',
-            duration: '',
-            energy: 0,
-            level: Number(target?.groups?.level) || 0,
-            sneakerCode: ''
-          })
-        : new Failure(new Error('Cannot extract values.'))
+      const amount: number = Number(text.match(this.amountRegex)?.groups?.amount)
+      const currentLv: number = Number(text.match(this.levelRegex)?.groups?.level)
+      const nextLv: number = currentLv + 1
+
+      if (Number.isNaN(amount) || !currentLv || Number.isNaN(nextLv)) 
+        return new Failure(new Error('The expected string was not included.')) 
+
+      return new Success({
+        title: 'Level Up',
+        inOut: 'OUT',
+        currency: 'GST',
+        amount,
+        date: currentTime,
+        level: currentLv,
+        remarks: `Lv${currentLv} -> Lv${nextLv}`
+      })
+
     }
 
     if (text.match(this.identifier.STEPN)) {
-      console.log(text)
-      const earningTarget = text.match(this.earningRegex)
-      const startTimeTarget = text.match(this.datetimeRegex)
-      const durationTarget = text.match(this.durationRegex)
-      const usedEnergyTarget = text.match(this.usedEnergyRegex)
-      const levelTarget = text.match(this.levelRegex)
-      const sneakerCodeTarget = text.match(this.sneakerCodeRegex)
-     
+      const amount = Number(text.match(this.earningRegex)?.groups?.earning)
+      const date = text.match(this.datetimeRegex)?.groups?.date
+      const duration = text.match(this.durationRegex)?.groups?.duration
+      const durability = text.match(this.durabilityRegex)?.groups?.durability
+      const energy = Number(text.match(this.usedEnergyRegex)?.groups?.usedEnergy)
+      const level = Number(text.match(this.levelRegex)?.groups?.level)
+      const sneakerCode = `#${text.match(this.sneakerCodeRegex)?.groups?.sneakerCode}`
+
+      console.log(amount, date, duration, energy, level, sneakerCode)
+
+      if (Number.isNaN(amount) || !date || !duration || Number.isNaN(energy) || Number.isNaN(level) || !sneakerCode)
+        return new Failure(new Error('The expected string was not included.'))
+
       return new Success({
-            title: 'Move & Earn',
-            inOut: 'IN',
-            currency: 'GST',
-            price: Number(earningTarget?.groups?.num) || 0,
-            startTime: startTimeTarget?.groups?.date || '',
-            duration: durationTarget?.groups?.duration || '',
-            energy: Number(usedEnergyTarget?.groups?.usedEnergy) || 0,
-            level: Number(levelTarget?.groups?.level) || 0,
-            sneakerCode: `#${sneakerCodeTarget?.groups?.sneakerCode}` || ''
-          })
+        title: 'Move & Earn',
+        inOut: 'IN',
+        currency: 'GST',
+        amount,
+        date,
+        duration,
+        durability,
+        energy,
+        level,
+        sneakerCode
+      })
     }
 
-    return new Failure(new Error('The expected string was not included.'))
+    return new Failure(new Error('This screenshot pattern is not supported.'))
   }
 }

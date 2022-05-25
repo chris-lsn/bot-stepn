@@ -13,6 +13,10 @@ const ltps = new LiveTokenPriceScheduler()
 
 let bot: BasePlatform
 
+app.get('*', (req: any, res: any) => {
+  res.send("Enjoy the StepN bot :)")
+})
+
 app.listen(config.port, () => {
   // Bot
   switch (config.platform) {

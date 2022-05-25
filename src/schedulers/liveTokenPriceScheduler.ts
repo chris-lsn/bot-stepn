@@ -1,4 +1,5 @@
-import CoinService from "../services/coinService";
+import logger from "../logger";
+import CoinService, { Coin } from "../services/coinService";
 import { ConfigService } from "../services/configService";
 import { SheetService } from "../services/sheetService";
 
@@ -12,9 +13,11 @@ class LiveTokenPriceScheduler {
     
     start(): void {
         schedule.scheduleJob("* */60 * * * *", async () => {
-           const result = await this.coinService.fetchCoinPrice(this.gstId)
+           const result = await this.coinService.fetchCoin(Coin.GST)
            if (result.isSuccess()){
-            
+             
+           } else if (result.isFailure()) {
+              logger.error(result.error.message);
            }
             
         })
