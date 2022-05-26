@@ -1,11 +1,12 @@
 # bot-stepn
 
-The Slack BOT program to keep track of [STEPN](https://stepn.com/).
+The Slack/Telegram BOT program to keep track of [STEPN](https://stepn.com/).
 
 It analyzes the following images and records the GST earned or used in the game in a Google Spreadsheet.
 - Results screen after walking
 - Screenshot of shoe level up
 - Screenshot of Shoe repair
+- Latest token price fetching
 
 ## Preparation
 
@@ -51,7 +52,7 @@ It analyzes the following images and records the GST earned or used in the game 
    5. `GOOGLE_SHEET_ID`: ID of Google Spreadsheet prepared by GCP
    6. `GOOGLE_CREDENTIALS`: Copy and paste the contents of the service account key downloaded in preparation for GCP.
 2. Deploy this app to heroku
-3. Add the application URL on [Kaffeine](https://kaffeine.herokuapp.com/) to prevent app idle
+3. Add the application URL on [Kaffeine](https://kaffeine.herokuapp.com/) to prevent the app being idle
 
 
 ## Usage
@@ -59,19 +60,24 @@ It analyzes the following images and records the GST earned or used in the game 
 ### Record GST earned by walking
 Post the results screen to the Slack/Telegram after the walk.
 
-![result](https://user-images.githubusercontent.com/12569534/162848492-212d7c0e-a75d-4ff4-a517-3ad7c307d34f.JPG)
+<img width="480" alt="move-and-earn" src="https://user-images.githubusercontent.com/12569534/162848492-212d7c0e-a75d-4ff4-a517-3ad7c307d34f.JPG">
 
 ### Record GST spent repairing shoes
 Take the following screenshot and post it to the Slack/Telegram
 
-![repair](https://user-images.githubusercontent.com/12569534/162848476-22807d45-0883-4316-b768-611382bc3a62.PNG)
+<img width="480" alt="repair" src="https://user-images.githubusercontent.com/12569534/162848476-22807d45-0883-4316-b768-611382bc3a62.PNG">
 
 ### Record GST consumed by leveling up shoes
 Take the following screenshot and post it to the Slack/Telegram
 
-![levelup](https://user-images.githubusercontent.com/12569534/162848495-ed98c108-1a2d-4ac0-8e37-ab2a7303d6e7.PNG)
+<img width="480" alt="level-up" src="https://user-images.githubusercontent.com/12569534/162848495-ed98c108-1a2d-4ac0-8e37-ab2a7303d6e7.PNG">
 
 ### Fetch Token Latest Price
 Type the command as follows to get the token latest price - `/gst`, `/gmt`, `/sol`
 
-![fetchTokenPrice](https://user-images.githubusercontent.com/9113255/170405676-541fae14-94fd-4612-bbbd-72b88890b535.png)
+<img width="480" alt="fetch-token-price-tg" src="https://user-images.githubusercontent.com/9113255/170407221-af81e9f2-754f-4cfc-9a9c-6c9c1a125404.png">
+
+## Spreadsheet Preview
+The preview of the spreadsheet
+
+<img width="900" alt="spreadsheet-preiew" src="https://user-images.githubusercontent.com/9113255/170407454-c2ce3074-568b-449c-a37b-2a5d5d6fdf13.png">
